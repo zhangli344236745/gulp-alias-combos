@@ -1,0 +1,32 @@
+{
+  "author": {
+    "name": "zhangli344236745"
+  },
+  "dependencies": {
+    "gulp-util": "^3.0.5",
+    "through2": "^0.6.5"
+  },
+  "description": "一个根据配置合并js文件的gulp插件，合并时会自动提取模块间的依赖",
+  "devDependencies": {
+    "gulp": "^3.9.0"
+  },
+  
+  "keywords": [
+    "gulp",
+    "combos",
+    "requirejs",
+    "seajs",
+    "combine",
+    "alias"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "zhangli344236745",
+      "email": "zhangli344236745@163.com"
+    }
+  ],
+  "name": "gulp-alias-combos",
+  "version": "0.2.9"
+}
