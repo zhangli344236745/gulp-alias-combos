@@ -8,7 +8,7 @@ var through = require('through2')
 var gutil = require('gulp-util')
 var fs = require('fs')
 var path = require('path')
-var PLUGIN_NAME = 'gulp-alias-combo'
+var PLUGIN_NAME = 'gulp-alias-combos'
 var requireReg = /require\s*\(\s*(["'])(.+?)\1\s*\)/g
 var requirejsReg = /require(js)?\s*\(\s*\[(.+?)\]/g
 var commentReg = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg
@@ -27,6 +27,7 @@ function analyseDeps(content, filePath, options, depStore){
     var relativePath = '', parsedDep = null, deps = null
     content = content.replace(commentReg, '')
     deps = getDeps(content, options.exclude)
+    //console.log(deps);
     if(deps.length > 0){
         deps.forEach(function(dep){
             if(dep){
@@ -39,14 +40,17 @@ function analyseDeps(content, filePath, options, depStore){
                         depStore
                     )
                 }else{
-                    if(options.supportRelative && !depStore.hasAlias(dep)){
+                    //if(options.supportRelative && !depStore.hasAlias(dep)){
+                    if(!depStore.hasAlias(dep)&& dep.indexOf("text!") === -1){
                         relativePath = getRelativePath(filePath, dep, options)
                         parsedDep = parseDep(relativePath, options.baseUrl)
-                        depStore.addAlias(parsedDep, relativePath)
+                        //depStore.addAlias(parsedDep, relativePath)
+                        depStore.addAlias(dep, relativePath)
+                        //console.log(parsedDep,relativePath)
                         if(!depStore.hasRelative(dep)){
                             depStore.addRelative(dep, parsedDep)
                             analyseDeps(
-                                readModule(parsedDep, relativePath),
+                                readModule(dep, relativePath),
                                 relativePath,
                                 options,
                                 depStore
@@ -71,10 +75,12 @@ function getDeps(content, exclude){
         requires.forEach(function(dep){
             moduleId = dep.substring(dep.indexOf('(') + 1, dep.lastIndexOf(')')).trim()
             moduleId = moduleId.substring(1, moduleId.length-1)
+            //console.log(moduleId);
             deps.push(moduleId)
         })
     }
     requires = content.match(requirejsReg)
+    //console.log(requires)
     if(requires){
         requires.forEach(function(dep){
             try {
@@ -85,6 +91,7 @@ function getDeps(content, exclude){
             }catch(e){}
         })
     }
+
     if(exclude && (exclude instanceof Array)){
         for(var i=0,l=deps.length; i<l; i++){
             if(deps[i] && !inArray(exclude, deps[i])){
@@ -201,7 +208,7 @@ function tranform(moduleId, filePath, relativeDep){
                 if(key != relativeDep[key]){
                     content = content.replace(
                         new RegExp('require\\s*\\(\\s*[\'"]{1}'+key+'[\'"]{1}\\s*\\)', 'g'),
-                        'require("' + relativeDep[key] + '")'
+                        'require("' + key + '")'
                     )
                 }
             }
@@ -305,7 +312,7 @@ function combo(options){
             var depStore = new DepStore()
             analyseDeps(file.contents.toString(), file.path, options, depStore)
             file.contents = concatDeps(depStore, file.path, moduleId)
-            buildLog(file.path, depStore)
+            //buildLog(file.path, depStore)
             callback(null, file)
             depStore.destroy()
         }
